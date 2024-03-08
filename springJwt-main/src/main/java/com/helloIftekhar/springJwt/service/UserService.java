@@ -23,8 +23,11 @@ public abstract class UserService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    //email settings
     @Autowired
     private MailSender mailSender;
+    @Autowired
+    private JavaMailSender jmSender;
 
     private final AuthenticationService authenticationService;
     private final BCryptPasswordEncoder passwordEncoder;

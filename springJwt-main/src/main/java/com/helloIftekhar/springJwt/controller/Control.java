@@ -9,16 +9,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:4200") // Remove trailing slash
 @RequestMapping("/user")
-public class Control{
+public class Control {
     @Autowired
     private Interface appService;
 
     @PostMapping("/createInvoiceOrQuote")
-    public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) {
+    public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
         boolean check = appService.createInvoiceOrQuote(email, caiqi);
         if (check) {
             return ResponseEntity.ok(true);
@@ -70,6 +71,12 @@ public class Control{
             return ResponseEntity.ok(null);
         }
     }
+
+    @GetMapping("/getTotalUnpaid")
+    public double totalAmountofInvoices(@RequestParam String email) {
+        return appService.invoiceTotalAmt(email);
+    }
+
     @GetMapping("/displayAllQuote")
     public ResponseEntity<List<Quote>> getAllQuote(@RequestParam String email) {
         List<Quote> allQuote = appService.getAllQuote(email);
@@ -79,6 +86,7 @@ public class Control{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    // Other methods remain the same, just add @RequestParam String email where needed.
 }
+    // Other methods remain the same, just add @RequestParam String email where needed.
+
 

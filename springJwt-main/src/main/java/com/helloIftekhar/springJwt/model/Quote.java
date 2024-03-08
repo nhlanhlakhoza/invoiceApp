@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.helloIftekhar.springJwt.model.Items;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -18,11 +17,9 @@ public class Quote implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     private double totalAmount;
-
     @JsonFormat(pattern = "M/d/yyyy")
-
     private LocalDate date;
-
+    private int quoteNo;
 
     @OneToMany(mappedBy = "quote", cascade = CascadeType.ALL)
     @JsonIgnore
@@ -36,10 +33,11 @@ public class Quote implements Serializable {
     public Quote() {
     }
 
-    public Quote(int id, double totalAmount, LocalDate date, List<Items> items, User user) {
+    public Quote(int id, double totalAmount, LocalDate date, int quoteNo, List<Items> items, User user) {
         this.id = id;
         this.totalAmount = totalAmount;
         this.date = date;
+        this.quoteNo = quoteNo;
         this.items = items;
         this.user = user;
     }
@@ -82,5 +80,13 @@ public class Quote implements Serializable {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public int getQuoteNo() {
+        return quoteNo;
+    }
+
+    public void setQuoteNo(int quoteNo) {
+        this.quoteNo = quoteNo;
     }
 }
