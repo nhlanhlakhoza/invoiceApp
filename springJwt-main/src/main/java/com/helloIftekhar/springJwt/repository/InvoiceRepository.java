@@ -16,4 +16,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
     List<Invoice> findTop5ByUserOrderByDateDesc(User user);
 
     Invoice findByInvoiceIdAndUser(int invoiceId, User user);
+
+
 }

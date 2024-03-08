@@ -1,6 +1,7 @@
 package com.helloIftekhar.springJwt.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.helloIftekhar.springJwt.model.Items;
@@ -17,6 +18,9 @@ public class Quote implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     private double totalAmount;
+
+    @JsonFormat(pattern = "M/d/yyyy")
+
     private LocalDate date;
 
 

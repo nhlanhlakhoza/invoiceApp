@@ -1,10 +1,7 @@
 package com.helloIftekhar.springJwt.model;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -18,6 +15,8 @@ public class Invoice implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int invoiceId;
     private double totalAmount;
+    @JsonFormat(pattern = "M/d/yyyy")
+
     private LocalDate date;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
