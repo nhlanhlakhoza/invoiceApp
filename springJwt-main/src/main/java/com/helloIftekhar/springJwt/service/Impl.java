@@ -1,6 +1,5 @@
 package com.helloIftekhar.springJwt.service;
 
-;
 import com.helloIftekhar.springJwt.model.*;
 import com.helloIftekhar.springJwt.repository.*;
 import com.itextpdf.kernel.color.Color;
@@ -20,24 +19,23 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 public class Impl implements Interface {
 
-
-    //Initialize/Declare variables/repository
-    //repo
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private NotificationRepository notificationRepository;
     @Autowired
     private UserRepository userRepo;
     @Autowired
@@ -53,13 +51,8 @@ public class Impl implements Interface {
     @Autowired
     private ClientAddressRepository clientAddressRepo;
 
-
-    //email settings
-    @Autowired
-    private MailSender mailSender;
     @Autowired
     private JavaMailSender jmSender;
-
 
     @Override
     public boolean deleteInvoice(int id, String email) {
@@ -74,7 +67,12 @@ public class Impl implements Interface {
     @Override
     public List<Invoice> homeTop5Invoice(String email) {
         Optional<User> user = userRepo.findByEmail(email);
-        return user.map(value -> invoiceRepo.findTop5ByUserOrderByDateDesc(value)).orElse(Collections.emptyList());
+        return user.map(value -> invoiceRepo.findTop5ByUserOrderByInvoiceIdDesc(value)).orElse(Collections.emptyList());
+    }
+
+    public List<Invoice> homeTop1Invoice(String email) {
+        Optional<User> user = userRepo.findByEmail(email);
+        return user.map(value -> invoiceRepo.findTop1ByUserOrderByInvoiceIdDesc(value)).orElse(Collections.emptyList());
     }
 
     @Override
@@ -83,10 +81,10 @@ public class Impl implements Interface {
         return user.map(value -> quoteRepo.findTop5ByUserOrderByDateDesc(value)).orElse(Collections.emptyList());
     }
 
+
     @Override
     @Transactional
     public boolean createInvoiceOrQuote(String email, ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
-
         Optional<User> user = userRepo.findByEmail(email);
         double total = 0;
 
@@ -130,6 +128,12 @@ public class Impl implements Interface {
                 generateEmailPdf(caiqi.getType(), invoice.getDate(), user.get(), invoice.getTotalAmount(),
                         items, client, clientAddress, randomNumber);
 
+                // Create notification message for invoice
+                String notificationMessage = generateNotificationMessageForInvoice("Invoice", invoice.getInvoiceNo());
+
+                // Send notification
+                sendNotification(email, notificationMessage);
+
                 return true;
             } else if (caiqi.getType().equals("Quote")) {
                 Quote quote = caiqi.getQuote();
@@ -158,11 +162,50 @@ public class Impl implements Interface {
                 }
                 generateEmailPdf(caiqi.getType(), quote.getDate(), user.get(), quote.getTotalAmount(),
                         items, client, clientAddress, randomNumber);
+
+                // Create notification message for quote
+                String notificationMessage = generateNotificationMessageForQuote("Quote", quote.getQuoteNo());
+
+                // Send notification
+                sendNotification(email, notificationMessage);
+
                 return true;
             }
         }
         return false;
     }
+
+    public String generateNotificationMessageForInvoice(String type, int invoiceNo) {
+        return "Invoice number #" + invoiceNo + " has been successfully added.";
+    }
+
+    public String generateNotificationMessageForQuote(String type, int quoteNo) {
+        return "Quote number #" + quoteNo + " has been successfully added.";
+    }
+
+    public void sendNotification(String email, String message) {
+        try {
+            MimeMessage mimeMessage = jmSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            helper.setTo(email);
+            helper.setFrom("nhlanhlakhoza05@gmail.com"); // Change this to your sender email
+            helper.setSubject("Notification"); // You can set the subject as needed
+            helper.setText(message, false);
+
+            jmSender.send(mimeMessage);
+
+            // Save notification to the database
+            Notification notification = new Notification();
+            notification.setMessage(message);
+            notification.setRecipient(email);
+            notification.setSentAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+        } catch (MessagingException e) {
+            e.printStackTrace(); // Handle the exception appropriately, like logging it
+        }
+    }
+
 
     @Override
     public List<Invoice> getAllInvoices(String email) {
@@ -182,33 +225,22 @@ public class Impl implements Interface {
         }
     }
 
-
-
-
-
-
-
-    public void sendDoc(String to, String from,String path, Client client, String type)
-    {
+    public void sendDoc(String to, String from, String path, Client client, String type) {
         try {
             MimeMessage mimeMessage = jmSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-            // Set basic email properties
             helper.setTo(to);
             helper.setFrom("nhlanhlakhoza05@gmail.com");
-            helper.setSubject(type+" attachment");
-            helper.setText("Dear "+client.getF_name()+",\n\nAttached is your "+type+".\n" +
-                    "Thank your for your time.\n\nKind Regards\n", false); // Set to 'true' if using HTML in the body
+            helper.setSubject(type + " attachment");
+            helper.setText("Dear " + client.getF_name() + ",\n\nAttached is your " + type + ".\n" +
+                    "Thank your for your time.\n\nKind Regards\n", false);
 
-            // Attach the file from the specified path
             FileSystemResource file = new FileSystemResource(new File(path));
-            helper.addAttachment(Objects.requireNonNull(file.getFilename()),file);
+            helper.addAttachment(Objects.requireNonNull(file.getFilename()), file);
 
-            // Send the email
             jmSender.send(mimeMessage);
         } catch (MessagingException e) {
-            // Handle exception (e.g., log error)
             e.printStackTrace();
         }
     }
@@ -368,3 +400,6 @@ public class Impl implements Interface {
         return isBold ?myCell.setBold():myCell;
     }
 }
+
+
+

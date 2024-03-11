@@ -16,7 +16,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
 
     List<Invoice> findByUserEmail(String userEmail);
 
-    List<Invoice> findTop5ByUserOrderByDateDesc(User user);
+    List<Invoice> findTop5ByUserOrderByInvoiceIdDesc(User user);
 
     Invoice findByInvoiceNoAndUser(int invoiceNo, User user);
 
@@ -26,5 +26,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
     Double getTotalUnpaidAmount(@Param("userEmail") String userEmail);
 
 
-
+    List<Invoice> findTop1ByUserOrderByInvoiceIdDesc(User user);
 }

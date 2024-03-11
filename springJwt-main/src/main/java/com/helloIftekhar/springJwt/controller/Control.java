@@ -1,15 +1,16 @@
 package com.helloIftekhar.springJwt.controller;
 
-import com.helloIftekhar.springJwt.model.ClientAddressInvoiceQuoteItems;
-import com.helloIftekhar.springJwt.model.Invoice;
-import com.helloIftekhar.springJwt.model.Quote;
+import com.helloIftekhar.springJwt.model.*;
+import com.helloIftekhar.springJwt.service.Impl;
 import com.helloIftekhar.springJwt.service.Interface;
+import com.helloIftekhar.springJwt.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:4200") // Remove trailing slash
@@ -17,6 +18,10 @@ import java.util.List;
 public class Control {
     @Autowired
     private Interface appService;
+    @Autowired
+    private Impl impl;
+    @Autowired
+    private NotificationService notificationService;
 
     @PostMapping("/createInvoiceOrQuote")
     public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
@@ -27,6 +32,7 @@ public class Control {
             return ResponseEntity.badRequest().body(false);
         }
     }
+
 
     @DeleteMapping("/searchInvoice")
     public ResponseEntity<Invoice> searchInvoice(@RequestParam int id, @RequestParam String email) {
@@ -61,6 +67,17 @@ public class Control {
         }
     }
 
+    @GetMapping("/noti")
+    public ResponseEntity<List<Invoice>> display1InvoicesHome(@RequestParam String email) {
+        List<Invoice> invoices = appService.homeTop1Invoice(email);
+
+        if (invoices != null) {
+            return ResponseEntity.ok(invoices);
+        } else {
+            return ResponseEntity.ok(null);
+        }
+    }
+
     @GetMapping("/displayAllInvoices")
     public ResponseEntity<List<Invoice>> getAllInvoice(@RequestParam String email) {
         List<Invoice> allInvoice = appService.getAllInvoices(email);
@@ -84,6 +101,17 @@ public class Control {
             return ResponseEntity.ok(allQuote);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+    @GetMapping("/notifications")
+    public ResponseEntity<List<Notification>> getNotificationsByEmail(@RequestParam String email) {
+        try {
+            // Retrieve notifications based on the provided email
+            List<Notification> notifications = notificationService.getNotificationsByEmail(email);
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
 }
