@@ -1,9 +1,7 @@
 package com.helloIftekhar.springJwt.controller;
 
 import com.helloIftekhar.springJwt.model.*;
-import com.helloIftekhar.springJwt.service.Impl;
-import com.helloIftekhar.springJwt.service.Interface;
-import com.helloIftekhar.springJwt.service.NotificationService;
+import com.helloIftekhar.springJwt.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,10 @@ public class Control {
     private Impl impl;
     @Autowired
     private NotificationService notificationService;
-
+    @Autowired
+    private InvoiceService invoiceService;
+    @Autowired
+    private QuoteService quoteService;
     @PostMapping("/createInvoiceOrQuote")
     public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
         boolean check = appService.createInvoiceOrQuote(email, caiqi);
@@ -114,6 +115,26 @@ public class Control {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
+
+    @GetMapping("/invoice/{invoiceNo}")
+    public ResponseEntity<Invoice> getInvoiceDetails(@PathVariable int invoiceNo) {
+        Invoice invoice = invoiceService.getInvoiceByNo(invoiceNo);
+        if (invoice != null) {
+            return new ResponseEntity<>(invoice, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/quotes/{quoteNo}")
+    public ResponseEntity<Quote> getQuoteDetails(@PathVariable int quoteNo) {
+        Quote quote = quoteService.getQuoteByNo(quoteNo);
+        if (quote != null) {
+            return new ResponseEntity<>(quote, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
     // Other methods remain the same, just add @RequestParam String email where needed.
 

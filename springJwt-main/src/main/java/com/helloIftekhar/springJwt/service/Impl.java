@@ -78,7 +78,7 @@ public class Impl implements Interface {
     @Override
     public List<Quote> homeTop5Quote(String email) {
         Optional<User> user = userRepo.findByEmail(email);
-        return user.map(value -> quoteRepo.findTop5ByUserOrderByDateDesc(value)).orElse(Collections.emptyList());
+        return user.map(value -> quoteRepo.findTop5ByUserOrderByIdDesc(value)).orElse(Collections.emptyList());
     }
 
 
@@ -132,7 +132,8 @@ public class Impl implements Interface {
                 String notificationMessage = generateNotificationMessageForInvoice("Invoice", invoice.getInvoiceNo());
 
                 // Send notification
-                sendNotification(email, notificationMessage);
+                sendNotification(email, notificationMessage, invoice, null);
+
 
                 return true;
             } else if (caiqi.getType().equals("Quote")) {
@@ -167,7 +168,7 @@ public class Impl implements Interface {
                 String notificationMessage = generateNotificationMessageForQuote("Quote", quote.getQuoteNo());
 
                 // Send notification
-                sendNotification(email, notificationMessage);
+                sendNotification(email, notificationMessage, null, quote);
 
                 return true;
             }
@@ -183,7 +184,7 @@ public class Impl implements Interface {
         return "Quote number #" + quoteNo + " has been successfully added.";
     }
 
-    public void sendNotification(String email, String message) {
+    public void sendNotification(String email, String message, Invoice invoice, Quote quote) {
         try {
             MimeMessage mimeMessage = jmSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -200,6 +201,14 @@ public class Impl implements Interface {
             notification.setMessage(message);
             notification.setRecipient(email);
             notification.setSentAt(LocalDateTime.now());
+
+            // Set the invoice or quote based on what is provided
+            if (invoice != null) {
+                notification.setInvoice(invoice);
+            } else if (quote != null) {
+                notification.setQuote(quote);
+            }
+
             notificationRepository.save(notification);
         } catch (MessagingException e) {
             e.printStackTrace(); // Handle the exception appropriately, like logging it
