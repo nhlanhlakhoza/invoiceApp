@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -14,8 +15,8 @@ public class Invoice implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int invoiceId;
     private double totalAmount;
-    @JsonFormat(pattern = "M/d/yyyy")
-    private LocalDate date;
+    @JsonFormat(pattern = "M/d/yyyy HH:mm")
+    private LocalDateTime date;
     private int invoiceNo;
     private String paymentStatus;
 
@@ -32,7 +33,7 @@ public class Invoice implements Serializable {
         this.paymentStatus = "unpaid"; // Setting default payment status
     }
 
-    public Invoice(int invoiceId, double totalAmount, LocalDate date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user) {
+    public Invoice(int invoiceId, double totalAmount, LocalDateTime date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user) {
         this.invoiceId = invoiceId;
         this.totalAmount = totalAmount;
         this.date = date;
@@ -66,11 +67,11 @@ public class Invoice implements Serializable {
         this.totalAmount = totalAmount;
     }
 
-    public LocalDate getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 

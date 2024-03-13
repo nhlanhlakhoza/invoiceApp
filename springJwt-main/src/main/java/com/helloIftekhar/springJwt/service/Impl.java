@@ -101,7 +101,7 @@ public class Impl implements Interface {
             if (caiqi.getType().equals("Invoice")) {
                 Invoice invoice = caiqi.getInvoice();
                 invoice.setUser(user.get());
-                invoice.setDate(LocalDate.now());
+                invoice.setDate(LocalDateTime.now());
                 invoice.setPaymentStatus("unpaid");
 
                 List<Items> items = caiqi.getItems();
@@ -139,7 +139,7 @@ public class Impl implements Interface {
             } else if (caiqi.getType().equals("Quote")) {
                 Quote quote = caiqi.getQuote();
                 quote.setUser(user.get());
-                quote.setDate(LocalDate.now());
+                quote.setDate(LocalDateTime.now());
 
                 List<Items> items = caiqi.getItems();
                 for (Items item : items) {
@@ -161,7 +161,7 @@ public class Impl implements Interface {
                     item.setQuote(quote);
                     itemRepo.save(item);
                 }
-                generateEmailPdf(caiqi.getType(), quote.getDate(), user.get(), quote.getTotalAmount(),
+                generateEmailPdf(caiqi.getType(), LocalDateTime.from(quote.getDate()), user.get(), quote.getTotalAmount(),
                         items, client, clientAddress, randomNumber);
 
                 // Create notification message for quote
@@ -259,7 +259,7 @@ public class Impl implements Interface {
         return invoiceRepo.getTotalUnpaidAmount(email);
     }
 
-    public void generateEmailPdf(String type, LocalDate localDate, User user,
+    public void generateEmailPdf(String type, LocalDateTime localDateTime, User user,
                                  double totalAmount, List<Items> items,
                                  Client client, ClientAddress clientA,
                                  int randomNo) throws FileNotFoundException {
@@ -271,8 +271,8 @@ public class Impl implements Interface {
         //page spec end
 
         //change LocalDate to String
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String dateString = localDate.format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy HH:mm");
+        String dateString = localDateTime.format(formatter);
 
         //header
         float threecol=190f;
@@ -380,7 +380,7 @@ public class Impl implements Interface {
         tb.addCell(new Cell().add("TERMS AND CONDITIONS\n").setBold().setBorder(Border.NO_BORDER));
         List<String>TncList = new ArrayList<>();
         TncList.add("1. The Seller shall bot be liable to the buyer directly or indirectly for any loss or damage suffered by the buyer");
-        TncList.add("1. The Seller warrants the products for one (1) year fromthe issued date");
+        TncList.add("1. The Seller warrants the products for one (1) year from the issued date");
 
         for (String tnc:TncList){
             tb.addCell(new Cell().add(tnc).setBorder(Border.NO_BORDER));

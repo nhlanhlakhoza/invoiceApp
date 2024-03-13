@@ -125,7 +125,7 @@ public class Control {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/quotes/{quoteNo}")
+    @GetMapping("/quote/{quoteNo}")
     public ResponseEntity<Quote> getQuoteDetails(@PathVariable int quoteNo) {
         Quote quote = quoteService.getQuoteByNo(quoteNo);
         if (quote != null) {

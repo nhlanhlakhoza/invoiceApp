@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -17,13 +18,13 @@ public class Quote implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     private double totalAmount;
-    @JsonFormat(pattern = "M/d/yyyy")
-    private LocalDate date;
+    @JsonFormat(pattern = "M/d/yyyy HH:mm")
+    private LocalDateTime date;
     private int quoteNo;
 
     @OneToMany(mappedBy = "quote", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Items> items;
+    private List<com.helloIftekhar.springJwt.model.Items> Items;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -33,12 +34,12 @@ public class Quote implements Serializable {
     public Quote() {
     }
 
-    public Quote(int id, double totalAmount, LocalDate date, int quoteNo, List<Items> items, User user) {
+    public Quote(int id, double totalAmount, LocalDateTime date, int quoteNo,List<com.helloIftekhar.springJwt.model.Items> items, User user) {
         this.id = id;
         this.totalAmount = totalAmount;
         this.date = date;
         this.quoteNo = quoteNo;
-        this.items = items;
+        this.Items = items;
         this.user = user;
     }
 
@@ -58,20 +59,20 @@ public class Quote implements Serializable {
         this.totalAmount = totalAmount;
     }
 
-    public LocalDate getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
     public List<Items> getItems() {
-        return items;
+        return Items;
     }
 
     public void setItems(List<Items> items) {
-        this.items = items;
+        this.Items = items;
     }
 
     public User getUser() {
