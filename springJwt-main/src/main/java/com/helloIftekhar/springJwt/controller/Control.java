@@ -24,6 +24,9 @@ public class Control {
     private InvoiceService invoiceService;
     @Autowired
     private QuoteService quoteService;
+
+    @Autowired
+    private ClientService clientService;
     @PostMapping("/createInvoiceOrQuote")
     public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
         boolean check = appService.createInvoiceOrQuote(email, caiqi);
@@ -129,13 +132,30 @@ public class Control {
     public ResponseEntity<Quote> getQuoteDetails(@PathVariable int quoteNo) {
         Quote quote = quoteService.getQuoteByNo(quoteNo);
         if (quote != null) {
+
             return new ResponseEntity<>(quote, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @PostMapping("/quotes/{quoteNo}/update")
+    public ResponseEntity<?> updateQuote(
+            @PathVariable("quoteNo") Long quoteId,
+            @RequestParam("email") String email,
+            @RequestBody ClientAddressInvoiceQuoteItems caiqi) {
 
-}
-    // Other methods remain the same, just add @RequestParam String email where needed.
+        try {
+            boolean updated = appService.updateQuote(email, caiqi, quoteId);
+            if (updated) {
+                return ResponseEntity.ok().body("{\"message\": \"Quote updated successfully\"}");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"Quote not found or user not authorized\"}");
+            }
+        } catch (FileNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Error updating quote: " + e.getMessage() + "\"}");
+        }
+    }
+    }
+
 
 

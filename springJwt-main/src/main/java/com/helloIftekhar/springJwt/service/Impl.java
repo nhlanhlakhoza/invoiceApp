@@ -85,26 +85,35 @@ public class Impl implements Interface {
     @Override
     @Transactional
     public boolean createInvoiceOrQuote(String email, ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
-        Optional<User> user = userRepo.findByEmail(email);
-        double total = 0;
+        Optional<User> userOptional = userRepo.findByEmail(email);
 
-        if (user.isPresent()) {
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
             Client client = caiqi.getClient();
-            client.setUser(user.get());
+            client.setUser(user);
+            clientRepo.save(client); // Save the client
 
             ClientAddress clientAddress = caiqi.getClientAddress();
-            clientAddressRepo.save(clientAddress);
+            clientAddress.setClient(client); // Set the client for the client address
+            clientAddressRepo.save(clientAddress); // Save the client address
 
-            client.setClientAddress(clientAddress);
-            clientRepo.save(client);
+            // If you want to associate the client's ID with the quote, set it here
+            Quote quote = caiqi.getQuote();
+            quote.setUser(user);
+            quote.setClient(client); // Set the client for the quote
+            quote.setClientAddress(clientAddress); // Set the client address for the quote
 
             if (caiqi.getType().equals("Invoice")) {
+                // Handle invoice creation
                 Invoice invoice = caiqi.getInvoice();
-                invoice.setUser(user.get());
+                invoice.setUser(user);
+                invoice.setClient(client); // Set the client for the invoice
+                invoice.setClientAddress(clientAddress); // Set the client address for the invoice
                 invoice.setDate(LocalDateTime.now());
                 invoice.setPaymentStatus("unpaid");
 
                 List<Items> items = caiqi.getItems();
+                double total = 0;
                 for (Items item : items) {
                     item.setInvoice(invoice);
                     total += item.getPrice() * item.getQty();
@@ -125,7 +134,7 @@ public class Impl implements Interface {
                     itemRepo.save(item);
                 }
 
-                generateEmailPdf(caiqi.getType(), invoice.getDate(), user.get(), invoice.getTotalAmount(),
+                generateEmailPdf(caiqi.getType(), invoice.getDate(), user, invoice.getTotalAmount(),
                         items, client, clientAddress, randomNumber);
 
                 // Create notification message for invoice
@@ -133,15 +142,13 @@ public class Impl implements Interface {
 
                 // Send notification
                 sendNotification(email, notificationMessage, invoice, null);
-
-
                 return true;
+
             } else if (caiqi.getType().equals("Quote")) {
-                Quote quote = caiqi.getQuote();
-                quote.setUser(user.get());
                 quote.setDate(LocalDateTime.now());
 
                 List<Items> items = caiqi.getItems();
+                double total = 0;
                 for (Items item : items) {
                     item.setQuote(quote);
                     total += item.getPrice() * item.getQty();
@@ -161,7 +168,9 @@ public class Impl implements Interface {
                     item.setQuote(quote);
                     itemRepo.save(item);
                 }
-                generateEmailPdf(caiqi.getType(), LocalDateTime.from(quote.getDate()), user.get(), quote.getTotalAmount(),
+
+                // Handle email and notification for quote
+                generateEmailPdf(caiqi.getType(), LocalDateTime.from(quote.getDate()), user, quote.getTotalAmount(),
                         items, client, clientAddress, randomNumber);
 
                 // Create notification message for quote
@@ -169,12 +178,14 @@ public class Impl implements Interface {
 
                 // Send notification
                 sendNotification(email, notificationMessage, null, quote);
-
-                return true;
             }
+            return true;
         }
         return false;
     }
+
+
+
 
     public String generateNotificationMessageForInvoice(String type, int invoiceNo) {
         return "Invoice number #" + invoiceNo + " has been successfully added.";
@@ -214,6 +225,80 @@ public class Impl implements Interface {
             e.printStackTrace(); // Handle the exception appropriately, like logging it
         }
     }
+
+    public boolean updateQuote(String email, ClientAddressInvoiceQuoteItems caiqi, Long quoteNo) throws FileNotFoundException {
+        Optional<User> userOptional = userRepo.findByEmail(email);
+        double total = 0;
+
+        if (userOptional.isPresent()) {
+            Optional<Quote> quoteOptional = quoteRepo.findByQuoteNo(quoteNo);
+            if (quoteOptional.isPresent()) {
+                Quote quote = quoteOptional.get();
+                quote.setDate(LocalDateTime.now()); // Update date to current date
+
+                // Fetch the existing Client associated with the Quote
+                Client existingClient = quote.getClient();
+
+                // Update the existing Client's properties
+                Client newClient = caiqi.getClient();
+                existingClient.setF_name(newClient.getF_name());
+                existingClient.setL_name(newClient.getL_name());
+                existingClient.setEmail(newClient.getEmail());
+                existingClient.setPhoneNo(newClient.getPhoneNo());
+                clientRepo.save(existingClient);
+
+                // Fetch the existing ClientAddress associated with the Quote
+                ClientAddress existingClientAddress = quote.getClientAddress();
+
+                // Update the existing ClientAddress's properties
+                ClientAddress newClientAddress = caiqi.getClientAddress();
+                existingClientAddress.setStreetNo(newClientAddress.getStreetNo());
+                existingClientAddress.setStreetName(newClientAddress.getStreetName());
+                existingClientAddress.setTown(newClientAddress.getTown());
+                existingClientAddress.setCity(newClientAddress.getCity());
+                existingClientAddress.setPostalCode(newClientAddress.getPostalCode());
+                clientAddressRepo.save(existingClientAddress);
+
+                // Update items
+                List<Items> newItems = caiqi.getItems();
+                for (Items newItem : newItems) {
+                    // Set the quote reference for the new item
+                    newItem.setQuote(quote);
+                    // Update total amount
+                    total += newItem.getPrice() * newItem.getQty();
+                }
+
+                // Delete existing items associated with the quote number
+                itemRepo.deleteByQuoteNo(quoteNo);
+
+                // Clear existing items in the quote
+                quote.getItems().clear();
+
+                // Add the new items to the quote
+                quote.getItems().addAll(newItems);
+
+                // Update total amount in the quote
+                quote.setTotalAmount(total);
+
+                // Save updated quote
+                quoteRepo.save(quote);
+
+                // Generate and send email PDF
+                generateEmailPdf("Quote", LocalDateTime.now(), userOptional.get(), quote.getTotalAmount(),
+                        newItems, existingClient, existingClientAddress, quote.getQuoteNo());
+
+                // Create and send notification message for quote
+                String notificationMessage = "Quote number #" + quote.getQuoteNo() + " updated successfully";
+                sendNotification(email, notificationMessage, null, quote);
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 
 
     @Override

@@ -30,17 +30,42 @@ public class Quote implements Serializable {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+    @ManyToOne
+    @JoinColumn(name = "client_id")
 
+    private Client client;
+
+    @ManyToOne
+    @JoinColumn(name = "client_address_id")
+    private ClientAddress clientAddress;
     public Quote() {
     }
 
-    public Quote(int id, double totalAmount, LocalDateTime date, int quoteNo,List<com.helloIftekhar.springJwt.model.Items> items, User user) {
+    public Quote(int id, double totalAmount, LocalDateTime date, int quoteNo,List<com.helloIftekhar.springJwt.model.Items> items, User user,Client client,ClientAddress clientAddress) {
         this.id = id;
         this.totalAmount = totalAmount;
         this.date = date;
         this.quoteNo = quoteNo;
         this.Items = items;
         this.user = user;
+        this.client=client;
+        this.clientAddress=clientAddress;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public ClientAddress getClientAddress() {
+        return clientAddress;
+    }
+
+    public void setClientAddress(ClientAddress clientAddress) {
+        this.clientAddress = clientAddress;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public int getId() {
@@ -90,4 +115,6 @@ public class Quote implements Serializable {
     public void setQuoteNo(int quoteNo) {
         this.quoteNo = quoteNo;
     }
+
+
 }

@@ -28,12 +28,19 @@ public class Invoice implements Serializable {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+    @ManyToOne
+    @JoinColumn(name = "client_id")
 
+    private Client client;
+
+    @ManyToOne
+    @JoinColumn(name = "client_address_id")
+    private ClientAddress clientAddress;
     public Invoice() {
         this.paymentStatus = "unpaid"; // Setting default payment status
     }
 
-    public Invoice(int invoiceId, double totalAmount, LocalDateTime date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user) {
+    public Invoice(int invoiceId, double totalAmount, LocalDateTime date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user,Client client,ClientAddress clientAddress) {
         this.invoiceId = invoiceId;
         this.totalAmount = totalAmount;
         this.date = date;
@@ -41,6 +48,8 @@ public class Invoice implements Serializable {
         this.paymentStatus = (paymentStatus != null) ? paymentStatus : "unpaid"; // Setting default if payment status is null
         Items = items;
         this.user = user;
+        this.client=client;
+        this.clientAddress=clientAddress;
     }
 
     public int getInvoiceId() {
@@ -49,6 +58,22 @@ public class Invoice implements Serializable {
 
     public String isPaymentStatus() {
         return paymentStatus;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public ClientAddress getClientAddress() {
+        return clientAddress;
+    }
+
+    public void setClientAddress(ClientAddress clientAddress) {
+        this.clientAddress = clientAddress;
     }
 
     public void setPaymentStatus(String paymentStatus) {

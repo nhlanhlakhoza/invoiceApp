@@ -7,6 +7,7 @@ import com.helloIftekhar.springJwt.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface QuoteRepository extends JpaRepository<Quote, Integer> {
 
@@ -19,5 +20,6 @@ public interface QuoteRepository extends JpaRepository<Quote, Integer> {
     Quote findByQuoteNoAndUser(int quoteNo, User user);
 
     Quote findByQuoteNo(int quoteNo);
-
+    Optional<Quote> findByQuoteNo(Long quoteNo);
+    Optional<Quote> findById(Long id);
 }

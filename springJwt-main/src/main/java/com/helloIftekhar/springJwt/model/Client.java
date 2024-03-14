@@ -98,4 +98,6 @@ public class Client implements Serializable {
     public void setClientAddress(ClientAddress clientAddress) {
         this.clientAddress = clientAddress;
     }
+
+
 }

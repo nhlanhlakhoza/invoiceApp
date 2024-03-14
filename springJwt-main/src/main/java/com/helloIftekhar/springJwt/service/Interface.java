@@ -20,4 +20,6 @@ public interface Interface {
     public List<Quote> getAllQuote(String email);
     public double invoiceTotalAmt(String email);
     public void sendDoc(String to, String from, String path, Client client, String type);
+    boolean updateQuote(String email, ClientAddressInvoiceQuoteItems caiqi, Long quoteNo) throws FileNotFoundException;
+
 }

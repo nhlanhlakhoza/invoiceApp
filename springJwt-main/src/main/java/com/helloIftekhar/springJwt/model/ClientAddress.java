@@ -20,7 +20,6 @@ public class ClientAddress {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="client_id")
-    @JsonIgnore
     private Client client;
 
     public ClientAddress() {
