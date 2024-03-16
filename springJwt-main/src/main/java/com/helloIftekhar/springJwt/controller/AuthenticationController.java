@@ -8,10 +8,8 @@ import com.helloIftekhar.springJwt.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -62,5 +60,13 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body("{\"message\": \"User not found\"}");
         }
     }
-
+    @PostMapping("/update-image")
+    public ResponseEntity<?> updateImageByEmail(@RequestParam String email) {
+        try {
+            authService.updateImageByEmail(email);
+            return ResponseEntity.ok().body("{\"message\": \"Image updated successfully\"}");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("{\"message\": \"Error updating image\"}");
+        }
+    }
 }

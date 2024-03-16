@@ -126,5 +126,12 @@ public class AuthenticationService {
         }
         return null; // Return null if default picture is not found or cannot be loaded
     }
+    public void updateImageByEmail(String email) {
+        User user = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Set the default profile picture for the user
+        Blob defaultProfilePicture = loadDefaultProfilePictureBlob();
+        user.setImage(defaultProfilePicture);
+        repository.save(user);
+    }
 }
