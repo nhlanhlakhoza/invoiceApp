@@ -116,7 +116,7 @@ public class AuthenticationService {
     private Blob loadDefaultProfilePictureBlob() {
         try {
             // Load the default profile picture from a predefined location or resource
-            InputStream inputStream = getClass().getResourceAsStream("/images/default watsapp 2.jpg");
+            InputStream inputStream = getClass().getResourceAsStream("/images/default2.jpg");
             if (inputStream != null) {
                 byte[] bytes = IOUtils.toByteArray(inputStream);
                 return new SerialBlob(bytes); // Convert byte array to Blob
