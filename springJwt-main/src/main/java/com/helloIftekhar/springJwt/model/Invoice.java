@@ -45,7 +45,7 @@ public class Invoice implements Serializable {
         this.totalAmount = totalAmount;
         this.date = date;
         this.invoiceNo = invoiceNo;
-        this.paymentStatus = (paymentStatus != null) ? paymentStatus : "unpaid"; // Setting default if payment status is null
+        this.paymentStatus =paymentStatus;
         Items = items;
         this.user = user;
         this.client=client;
@@ -78,6 +78,10 @@ public class Invoice implements Serializable {
 
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
     public void setInvoiceId(int invoiceId) {

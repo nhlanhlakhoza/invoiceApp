@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 public class InvoiceServiceImpl implements InvoiceService{
 
     @Autowired
-    private InvoiceRepository invoiceRepository; // Update with your repository class
-
+    private InvoiceRepository invoiceRepository;
     @Override
     public Invoice getInvoiceByNo(int invoiceNo) {
         return invoiceRepository.findByInvoiceNo(invoiceNo);
     }
+
+
 }

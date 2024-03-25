@@ -24,6 +24,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,7 +51,11 @@ public class Impl implements Interface {
     private ClientRepository clientRepo;
     @Autowired
     private ClientAddressRepository clientAddressRepo;
+    @Autowired
+    private Payfast payfast;
 
+    String link="";
+    //email settings
     @Autowired
     private JavaMailSender jmSender;
 
@@ -84,7 +89,7 @@ public class Impl implements Interface {
 
     @Override
     @Transactional
-    public boolean createInvoiceOrQuote(String email, ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
+    public boolean createInvoiceOrQuote(String email, ClientAddressInvoiceQuoteItems caiqi) throws IOException {
         Optional<User> userOptional = userRepo.findByEmail(email);
 
         if (userOptional.isPresent()) {
@@ -226,7 +231,7 @@ public class Impl implements Interface {
         }
     }
 
-    public boolean updateQuote(String email, ClientAddressInvoiceQuoteItems caiqi, Long quoteNo) throws FileNotFoundException {
+    public boolean updateQuote(String email, ClientAddressInvoiceQuoteItems caiqi, Long quoteNo) throws IOException {
         Optional<User> userOptional = userRepo.findByEmail(email);
         double total = 0;
 
@@ -319,35 +324,62 @@ public class Impl implements Interface {
         }
     }
 
-    public void sendDoc(String to, String from, String path, Client client, String type) {
+    public void sendDoc(String to, String from,String path, Client client, String type, String link) {
         try {
             MimeMessage mimeMessage = jmSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
+            // Set basic email properties
             helper.setTo(to);
             helper.setFrom("nhlanhlakhoza05@gmail.com");
             helper.setSubject(type + " attachment");
             helper.setText("Dear " + client.getF_name() + ",\n\nAttached is your " + type + ".\n" +
-                    "Thank your for your time.\n\nKind Regards\n", false);
+                    "A link is provided to complete the payment. " + link + " \nThank you for your time.\n\nKind Regards\n", false);
 
+            // Attach the file from the specified path
             FileSystemResource file = new FileSystemResource(new File(path));
             helper.addAttachment(Objects.requireNonNull(file.getFilename()), file);
 
+            // Send the email
             jmSender.send(mimeMessage);
         } catch (MessagingException e) {
+            // Handle exception (e.g., log error)
             e.printStackTrace();
         }
     }
-
     @Override
     public double invoiceTotalAmt(String email) {
         return invoiceRepo.getTotalUnpaidAmount(email);
     }
+    @Override
+    public void changeStatus(String email, int invoiceNo) {
+        Optional<User> userOptional = userRepo.findByEmail(email);
+        System.out.println (userOptional);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Invoice invoice = invoiceRepo.findByInvoiceNoAndUser(invoiceNo, user);
+            if (invoice != null) {
+                System.out.println("Testing");
+                System.out.println(user.getEmail());
+                System.out.println(invoice.getDate());
+                System.out.println("Testing");
+
+                invoice.setPaymentStatus("Paid");
+
+                invoiceRepo.save(invoice);
+            } else {
+                System.out.println("Invoice not found for invoice number " + invoiceNo);
+            }
+        } else {
+            System.out.println("User not found with email " + email);
+        }
+    }
+
 
     public void generateEmailPdf(String type, LocalDateTime localDateTime, User user,
                                  double totalAmount, List<Items> items,
                                  Client client, ClientAddress clientA,
-                                 int randomNo) throws FileNotFoundException {
+                                 int randomNo) throws IOException {
         String path = "invoice.pdf";
         PdfWriter pdfWriter = new PdfWriter(path);
         PdfDocument pdfDocument = new PdfDocument(pdfWriter);
@@ -474,7 +506,11 @@ public class Impl implements Interface {
 
         document.close();
 
-        sendDoc(client.getEmail(), user.getEmail(), path, client,type);
+        if(type.equals("Invoice"))
+        {
+            link = payfast.initiatePayment(totalAmount, type, user.getEmail(),randomNo);
+        }
+        sendDoc(client.getEmail(), user.getEmail(), path, client,type, link);
     }
 
     static Cell getHeaderTextCell (String textValue){

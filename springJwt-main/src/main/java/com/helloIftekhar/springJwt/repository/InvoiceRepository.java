@@ -28,4 +28,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
 
     List<Invoice> findTop1ByUserOrderByInvoiceIdDesc(User user);
     Invoice findByInvoiceNo(int invoiceNo);
+
+    List<Invoice> findAllByUserEmailAndPaymentStatus(String email, String paymentStatus);
 }

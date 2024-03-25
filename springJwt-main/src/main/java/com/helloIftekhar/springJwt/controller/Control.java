@@ -5,9 +5,12 @@ import com.helloIftekhar.springJwt.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 @RestController
@@ -24,16 +27,43 @@ public class Control {
     private InvoiceService invoiceService;
     @Autowired
     private QuoteService quoteService;
-
+    @Autowired
+    private PaidNotificationService paidNotificationService; // Inject the PaidNotificationService bean
     @Autowired
     private ClientService clientService;
+
+    public Control(InvoiceServices invoiceServices) {
+        this.invoiceServices = invoiceServices;
+    }
+
     @PostMapping("/createInvoiceOrQuote")
-    public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws FileNotFoundException {
+    public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws IOException {
         boolean check = appService.createInvoiceOrQuote(email, caiqi);
         if (check) {
             return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.badRequest().body(false);
+        }
+    }
+
+
+
+    @GetMapping("/{email}/{invoiceNo}")
+    public ResponseEntity<byte[]> changeStatusAndSendNotification(@PathVariable("email") String email, @PathVariable("invoiceNo") int invoiceNo) {
+        try {
+            // Apply change status operation
+            appService.changeStatus(email, invoiceNo);
+
+            // Send notification using PaidNotificationService
+            paidNotificationService.sendNotification(email, "Invoice number #" + invoiceNo + " has been successfully Paid.", null, null);
+
+            // Return response
+            InputStream inputStream = getClass().getResourceAsStream("/images/images.png");
+            byte[] imageBytes = StreamUtils.copyToByteArray(inputStream);
+            String successMessage = "<div style='display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;'><img src='data:image/png;base64," + java.util.Base64.getEncoder().encodeToString(imageBytes) + "' alt='Success Icon' style='width: 100px; height: 100px; margin-bottom: 10px;'><p style='text-align: center; margin-top: 0; font-size: 24px;'><strong>Payment successful!</strong><br><span style='font-size: 18px;'>Your payment has been completed</span></p><button onclick='closeBrowser()' style='margin-top: 4px; background-color: green; color: white; border: none; padding: 10px 20px; cursor: pointer;'>Finish</button></div><script>function closeBrowser() { window.close(); }</script>";
+            return ResponseEntity.ok().body(successMessage.getBytes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to change status".getBytes());
         }
     }
 
@@ -71,16 +101,7 @@ public class Control {
         }
     }
 
-    @GetMapping("/noti")
-    public ResponseEntity<List<Invoice>> display1InvoicesHome(@RequestParam String email) {
-        List<Invoice> invoices = appService.homeTop1Invoice(email);
 
-        if (invoices != null) {
-            return ResponseEntity.ok(invoices);
-        } else {
-            return ResponseEntity.ok(null);
-        }
-    }
 
     @GetMapping("/displayAllInvoices")
     public ResponseEntity<List<Invoice>> getAllInvoice(@RequestParam String email) {
@@ -151,9 +172,22 @@ public class Control {
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"Quote not found or user not authorized\"}");
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Error updating quote: " + e.getMessage() + "\"}");
         }
+    }
+
+    private final InvoiceServices invoiceServices;
+
+    @Autowired
+    public Control(InvoiceService invoiceService, InvoiceServices invoiceServices) {
+        this.invoiceService = invoiceService;
+        this.invoiceServices = invoiceServices;
+    }
+
+    @GetMapping("/{userEmail}/payment-status/{paymentStatus}")
+    public List<Invoice> getInvoicesByUserEmailAndPaymentStatus(@PathVariable String userEmail, @PathVariable String paymentStatus) {
+        return invoiceServices.getInvoicesByUserEmailAndPaymentStatus(userEmail, paymentStatus);
     }
     }
 
