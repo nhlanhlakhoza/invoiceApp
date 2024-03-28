@@ -19,6 +19,16 @@ public class BusinessInfo implements Serializable {
     private String town;
     private String City;
     private int postalCode;
+    private String taxNo;
+    private String email;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     @OneToOne(fetch =FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -27,7 +37,7 @@ public class BusinessInfo implements Serializable {
     public BusinessInfo() {
     }
 
-    public BusinessInfo(int id, String companyName, String streetNo, String streetName, String town, String city, int postalCode, User user) {
+    public BusinessInfo(int id, String companyName, String streetNo, String streetName, String town, String city, int postalCode, String taxNo, String email, User user) {
         this.id = id;
         this.companyName = companyName;
         this.streetNo = streetNo;
@@ -35,7 +45,17 @@ public class BusinessInfo implements Serializable {
         this.town = town;
         City = city;
         this.postalCode = postalCode;
+        this.taxNo = taxNo;
+        this.email = email;
         this.user = user;
+    }
+
+    public String getTaxNo() {
+        return taxNo;
+    }
+
+    public void setTaxNo(String taxNo) {
+        this.taxNo = taxNo;
     }
 
     public int getId() {

@@ -17,6 +17,52 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Pocket pocket;
+
+    public Pocket getPocket() {
+        return pocket;
+    }
+
+    public void setPocket(Pocket pocket) {
+        this.pocket = pocket;
+    }
+
+    public BusinessInfo getBusinessInfo() {
+        return businessInfo;
+    }
+
+    public void setBusinessInfo(BusinessInfo businessInfo) {
+        this.businessInfo = businessInfo;
+    }
+
+    public List<Client> getClient() {
+        return client;
+    }
+
+    public void setClient(List<Client> client) {
+        this.client = client;
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
+    }
+
+    public User() {
+    }
+
+    public List<Quote> getQuotes() {
+        return quotes;
+    }
+
+    public void setQuotes(List<Quote> quotes) {
+        this.quotes = quotes;
+    }
 
     public String getFullName() {
         return fullName;
@@ -51,9 +97,14 @@ public class User implements UserDetails {
     @Lob
     private Blob image;
 
-    public User() {
+    public User(Integer id, Pocket pocket, Blob image, BusinessInfo businessInfo, List<Client> client, List<Invoice> invoices, List<Quote> quotes, String fullName, String phone_number, String username, String password, String email, List<Token> tokens) {
         this.id = id;
+        this.pocket = pocket;
         this.image = image;
+        this.businessInfo = businessInfo;
+        this.client = client;
+        this.invoices = invoices;
+        this.quotes = quotes;
         this.fullName = fullName;
         this.phone_number = phone_number;
         this.username = username;
@@ -61,6 +112,7 @@ public class User implements UserDetails {
         this.email = email;
         this.tokens = tokens;
     }
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private BusinessInfo businessInfo;

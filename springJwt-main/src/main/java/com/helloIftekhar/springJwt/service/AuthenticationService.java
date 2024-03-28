@@ -1,9 +1,8 @@
 package com.helloIftekhar.springJwt.service;
 
-import com.helloIftekhar.springJwt.model.AuthenticationResponse;
-import com.helloIftekhar.springJwt.model.Role;
-import com.helloIftekhar.springJwt.model.Token;
-import com.helloIftekhar.springJwt.model.User;
+import com.helloIftekhar.springJwt.model.*;
+import com.helloIftekhar.springJwt.repository.BusinessInfoRepository;
+import com.helloIftekhar.springJwt.repository.PocketRepository;
 import com.helloIftekhar.springJwt.repository.TokenRepository;
 import com.helloIftekhar.springJwt.repository.UserRepository;
 import org.apache.commons.io.IOUtils;
@@ -32,45 +31,56 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final TokenRepository tokenRepository;
     private final AuthenticationManager authenticationManager;
-
+    private final BusinessInfoRepository businessInfoRepository;
+    @Autowired
+    private PocketRepository  pocketRepo;
     @Autowired
     public AuthenticationService(UserRepository repository,
                                  PasswordEncoder passwordEncoder,
                                  JwtService jwtService,
                                  TokenRepository tokenRepository,
-                                 AuthenticationManager authenticationManager) {
+                                 AuthenticationManager authenticationManager,
+                                 BusinessInfoRepository businessInfoRepository) {
         this.repository = repository;
        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.tokenRepository = tokenRepository;
         this.authenticationManager = authenticationManager;
+        this.businessInfoRepository=businessInfoRepository;
     }
 
-    public AuthenticationResponse register(User request) {
-        if (repository.findByEmail(request.getEmail()).isPresent()) {
-            return new AuthenticationResponse(null, "User already exists");
+    public AuthenticationResponse register(RegisterUserAndCompany registerDTO) {
+        Optional<User> optionalUser = Optional.ofNullable(registerDTO.getUser());
+        Optional<BusinessInfo> optionalBusinessInfo = Optional.ofNullable(registerDTO.getBusinessInfo());
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            System.out.println(user.getEmail());
+
+            if (repository.findByEmail(user.getEmail()).isPresent()) {
+                return new AuthenticationResponse(null, "User already exists");
+            }
+
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+            // Set the default profile picture for the user
+            Blob defaultProfilePicture = loadDefaultProfilePictureBlob();
+            user.setImage(defaultProfilePicture);
+
+            repository.save(user);
+         BusinessInfo businessInfo=registerDTO.getBusinessInfo();
+            businessInfo.setUser(user);
+            businessInfoRepository.save(businessInfo);
+            String jwt = jwtService.generateToken(user);
+            saveUserToken(jwt, user);
+            Pocket pocket=new Pocket();
+            pocket.setBalance(0);
+            pocket.setUser(user);
+            pocketRepo.save(pocket);
+            return new AuthenticationResponse(jwt, "User registration was successful");
+        } else {
+            return new AuthenticationResponse(null, "User details not provided");
         }
-
-        User user = new User();
-        user.setFullName(request.getFullName());
-        user.setPhone_number(request.getPhone_number());
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-       user.setPassword(passwordEncoder.encode(request.getPassword()));
-        // user.setPassword(request.getPassword());
-       // user.setRole(request.getRole());
-
-        // Set the default profile picture for the user
-        Blob defaultProfilePicture = loadDefaultProfilePictureBlob();
-        user.setImage(defaultProfilePicture);
-
-        user = repository.save(user);
-
-        String jwt = jwtService.generateToken(user);
-
-        saveUserToken(jwt, user);
-
-        return new AuthenticationResponse(jwt, "User registration was successful");
     }
 
     public AuthenticationResponse authenticate(User request) {

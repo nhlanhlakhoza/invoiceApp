@@ -33,6 +33,9 @@ public class Invoice implements Serializable {
 
     private Client client;
 
+
+        private String CompanyName;
+
     @ManyToOne
     @JoinColumn(name = "client_address_id")
     private ClientAddress clientAddress;
@@ -40,16 +43,25 @@ public class Invoice implements Serializable {
         this.paymentStatus = "unpaid"; // Setting default payment status
     }
 
-    public Invoice(int invoiceId, double totalAmount, LocalDateTime date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user,Client client,ClientAddress clientAddress) {
+    public Invoice(int invoiceId, double totalAmount, LocalDateTime date, int invoiceNo, String paymentStatus, List<com.helloIftekhar.springJwt.model.Items> items, User user, Client client, String companyName, ClientAddress clientAddress) {
         this.invoiceId = invoiceId;
         this.totalAmount = totalAmount;
         this.date = date;
         this.invoiceNo = invoiceNo;
-        this.paymentStatus =paymentStatus;
+        this.paymentStatus = paymentStatus;
         Items = items;
         this.user = user;
-        this.client=client;
-        this.clientAddress=clientAddress;
+        this.client = client;
+        CompanyName = companyName;
+        this.clientAddress = clientAddress;
+    }
+
+    public String getCompanyName() {
+        return CompanyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        CompanyName = companyName;
     }
 
     public int getInvoiceId() {

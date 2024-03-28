@@ -40,16 +40,26 @@ public class Quote implements Serializable {
     private ClientAddress clientAddress;
     public Quote() {
     }
+    private String CompanyName;
 
-    public Quote(int id, double totalAmount, LocalDateTime date, int quoteNo,List<com.helloIftekhar.springJwt.model.Items> items, User user,Client client,ClientAddress clientAddress) {
+    public Quote(int id, double totalAmount, LocalDateTime date, int quoteNo, List<com.helloIftekhar.springJwt.model.Items> items, User user, Client client, ClientAddress clientAddress, String companyName) {
         this.id = id;
         this.totalAmount = totalAmount;
         this.date = date;
         this.quoteNo = quoteNo;
-        this.Items = items;
+        Items = items;
         this.user = user;
-        this.client=client;
-        this.clientAddress=clientAddress;
+        this.client = client;
+        this.clientAddress = clientAddress;
+        this.CompanyName = companyName;
+    }
+
+    public String getCompanyName() {
+        return CompanyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        CompanyName = companyName;
     }
 
     public Client getClient() {

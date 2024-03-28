@@ -14,22 +14,41 @@ public class ClientAddressInvoiceQuoteItems implements Serializable {
 
     private Client client;
     private ClientAddress clientAddress;
-
+private String CompanyName;
     private Invoice invoice;
     private String type;
     private List<Items> items;
 
-    private Quote quote;
+    public String getCompanyName() {
+        return CompanyName;
+    }
 
+    public void setCompanyName(String companyName) {
+        CompanyName = companyName;
+    }
+
+    private Quote quote;
+private BusinessInfo businessInfo;
     public ClientAddressInvoiceQuoteItems() {
     }
 
-    public ClientAddressInvoiceQuoteItems(Client client, ClientAddress clientAddress, Invoice invoice, String type, List<Items> items) {
+    public ClientAddressInvoiceQuoteItems(Client client, ClientAddress clientAddress, String companyName, Invoice invoice, String type, List<Items> items, Quote quote, BusinessInfo businessInfo) {
         this.client = client;
         this.clientAddress = clientAddress;
+        this.CompanyName = companyName;
         this.invoice = invoice;
         this.type = type;
         this.items = items;
+        this.quote = quote;
+        this.businessInfo = businessInfo;
+    }
+
+    public BusinessInfo getBusinessInfo() {
+        return businessInfo;
+    }
+
+    public void setBusinessInfo(BusinessInfo businessInfo) {
+        this.businessInfo = businessInfo;
     }
 
     public Client getClient() {

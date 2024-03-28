@@ -5,6 +5,7 @@ import com.helloIftekhar.springJwt.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,8 @@ public class Control {
 
     @PostMapping("/createInvoiceOrQuote")
     public ResponseEntity<Boolean> createInvoiceOrQuote(@RequestParam String email, @RequestBody ClientAddressInvoiceQuoteItems caiqi) throws IOException {
+        System.out.print("Email "+ SecurityContextHolder.getContext().getAuthentication().getName());
+
         boolean check = appService.createInvoiceOrQuote(email, caiqi);
         if (check) {
             return ResponseEntity.ok(true);
@@ -48,11 +51,11 @@ public class Control {
 
 
 
-    @GetMapping("/{email}/{invoiceNo}")
-    public ResponseEntity<byte[]> changeStatusAndSendNotification(@PathVariable("email") String email, @PathVariable("invoiceNo") int invoiceNo) {
+    @GetMapping("/{email}/{invoiceNo}/{amount}")
+    public ResponseEntity<byte[]> changeStatusAndSendNotification(@PathVariable("email") String email, @PathVariable("invoiceNo") int invoiceNo,@PathVariable("amount") double amount) {
         try {
             // Apply change status operation
-            appService.changeStatus(email, invoiceNo);
+            appService.changeStatus(email, invoiceNo,amount);
 
             // Send notification using PaidNotificationService
             paidNotificationService.sendNotification(email, "Invoice number #" + invoiceNo + " has been successfully Paid.", null, null);
@@ -92,16 +95,32 @@ public class Control {
 
     @GetMapping("/homeInvoices")
     public ResponseEntity<List<Invoice>> display5InvoicesHome(@RequestParam String email) {
-        List<Invoice> invoices = appService.homeTop5Invoice(email);
+        String paymentStatus = "unpaid"; // Assuming "unpaid" is the payment status for unpaid invoices
+        List<Invoice> top5UnpaidInvoices = appService.getTop5UnpaidInvoicesByEmail(email, paymentStatus);
 
-        if (invoices != null) {
-            return ResponseEntity.ok(invoices);
-        } else {
-            return ResponseEntity.ok(null);
+        if (top5UnpaidInvoices.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+
+        return ResponseEntity.ok(top5UnpaidInvoices);
     }
 
 
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<BusinessInfo> getAllBusinessInfoForUser(@PathVariable("email") String email) {
+        BusinessInfo AllbusinessInfo = appService.getAllBusinessInfo(email);
+        if (AllbusinessInfo != null) {
+            return ResponseEntity.ok(AllbusinessInfo);
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/getBalance")
+    public ResponseEntity<Double> getBalance(@RequestParam String email)
+    {
+        return ResponseEntity.ok(appService.getBalance(email));
+    }
 
     @GetMapping("/displayAllInvoices")
     public ResponseEntity<List<Invoice>> getAllInvoice(@RequestParam String email) {

@@ -53,7 +53,8 @@ public class Impl implements Interface {
     private ClientAddressRepository clientAddressRepo;
     @Autowired
     private Payfast payfast;
-
+    @Autowired
+    private PocketRepository  pocketRepo;
     String link="";
     //email settings
     @Autowired
@@ -70,9 +71,18 @@ public class Impl implements Interface {
     }
 
     @Override
-    public List<Invoice> homeTop5Invoice(String email) {
-        Optional<User> user = userRepo.findByEmail(email);
-        return user.map(value -> invoiceRepo.findTop5ByUserOrderByInvoiceIdDesc(value)).orElse(Collections.emptyList());
+    public List<Invoice> getTop5UnpaidInvoicesByEmail(String email, String paymentStatus) {
+        return invoiceRepo.findTop5ByUserEmailAndPaymentStatusOrderByInvoiceIdDesc(email, paymentStatus);
+    }
+    public BusinessInfo getAllBusinessInfo(String email) {
+        Optional<User> userOptional = userRepo.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return businessRepo.findByUserEmail(email);
+        } else {
+            return null;
+        }
     }
 
     public List<Invoice> homeTop1Invoice(String email) {
@@ -116,7 +126,7 @@ public class Impl implements Interface {
                 invoice.setClientAddress(clientAddress); // Set the client address for the invoice
                 invoice.setDate(LocalDateTime.now());
                 invoice.setPaymentStatus("unpaid");
-
+                invoice.setCompanyName(caiqi.getCompanyName());
                 List<Items> items = caiqi.getItems();
                 double total = 0;
                 for (Items item : items) {
@@ -151,7 +161,7 @@ public class Impl implements Interface {
 
             } else if (caiqi.getType().equals("Quote")) {
                 quote.setDate(LocalDateTime.now());
-
+                quote.setCompanyName(caiqi.getCompanyName());
                 List<Items> items = caiqi.getItems();
                 double total = 0;
                 for (Items item : items) {
@@ -352,7 +362,7 @@ public class Impl implements Interface {
         return invoiceRepo.getTotalUnpaidAmount(email);
     }
     @Override
-    public void changeStatus(String email, int invoiceNo) {
+    public void changeStatus(String email, int invoiceNo,double amount) {
         Optional<User> userOptional = userRepo.findByEmail(email);
         System.out.println (userOptional);
         if (userOptional.isPresent()) {
@@ -365,7 +375,10 @@ public class Impl implements Interface {
                 System.out.println("Testing");
 
                 invoice.setPaymentStatus("Paid");
-
+                Pocket pocket=pocketRepo.findByUser(user);
+                double  oldAmt=pocket.getBalance();
+                pocket.setBalance(oldAmt+amount);
+                pocketRepo.save(pocket);
                 invoiceRepo.save(invoice);
             } else {
                 System.out.println("Invoice not found for invoice number " + invoiceNo);
@@ -373,6 +386,11 @@ public class Impl implements Interface {
         } else {
             System.out.println("User not found with email " + email);
         }
+    }
+    @Override
+    public double getBalance(String email) {
+
+        return pocketRepo.findBalanceByUserEmail(email);
     }
 
 
@@ -386,6 +404,7 @@ public class Impl implements Interface {
         pdfDocument.setDefaultPageSize(PageSize.A4);
         Document document = new Document(pdfDocument);
         //page spec end
+       BusinessInfo businessInfo=businessRepo.findByUser(user);
 
         //change LocalDate to String
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy HH:mm");
@@ -427,7 +446,7 @@ public class Impl implements Interface {
         Table twoColTable2 = new Table(twocolumnWidth);
         twoColTable2.addCell(getCell10left("Company Name", true));
         twoColTable2.addCell(getCell10left("Name", true));
-        twoColTable2.addCell(getCell10left("Mfactory", false));
+        twoColTable2.addCell(getCell10left(businessInfo.getCompanyName(), false));
         twoColTable2.addCell(getCell10left(client.getF_name()+" "+client.getL_name(), false));
 
 
@@ -437,7 +456,7 @@ public class Impl implements Interface {
         Table twoColTable3 = new Table(twocolumnWidth);
         twoColTable3.addCell(getCell10left("Company Number", true));
         twoColTable3.addCell(getCell10left("Address", true));
-        twoColTable3.addCell(getCell10left("U809010098", false));
+        twoColTable3.addCell(getCell10left(businessInfo.getTaxNo(), false));
         twoColTable3.addCell(getCell10left(String.valueOf(clientA.getStreetNo()+", "+clientA.getStreetName()+","+clientA.getTown()
                 +"\n"+clientA.getCity()+"\n"+String.valueOf(clientA.getPostalCode())), false));
         document.add(twoColTable3);
@@ -446,10 +465,10 @@ public class Impl implements Interface {
 
         Table oneColTable1=new Table(oneColumnwidth);
         oneColTable1.addCell(getCell10left("Company Address", true));
-        oneColTable1.addCell(getCell10left("132 Partridge Avenue, Allen Grove\n" +
-                "Kempton Park, Gauteng\n", false));
+        oneColTable1.addCell(getCell10left(businessInfo.getStreetNo()+" "+businessInfo.getStreetName()+", "+"\n" +
+                businessInfo.getTown()+", "+businessInfo.getCity()+"\n", false));
         oneColTable1.addCell(getCell10left("Email", true));
-        oneColTable1.addCell(getCell10left("help@mfactory.mobi", false));
+        oneColTable1.addCell(getCell10left(businessInfo.getEmail(), false));
         document.add(oneColTable1.setMarginBottom(10f));
 
         Table tableDivider2=new Table(fullwidth);
