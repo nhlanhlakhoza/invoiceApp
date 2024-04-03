@@ -216,7 +216,7 @@ public class Impl implements Interface {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
             helper.setTo(email);
-            helper.setFrom("nhlanhlakhoza05@gmail.com"); // Change this to your sender email
+            helper.setFrom("inv@mfactorydev.co.za"); // Change this to your sender email
             helper.setSubject("Notification"); // You can set the subject as needed
             helper.setText(message, false);
 
@@ -341,10 +341,19 @@ public class Impl implements Interface {
 
             // Set basic email properties
             helper.setTo(to);
-            helper.setFrom("nhlanhlakhoza05@gmail.com");
+            helper.setFrom("inv@mfactorydev.co.za");
             helper.setSubject(type + " attachment");
-            helper.setText("Dear " + client.getF_name() + ",\n\nAttached is your " + type + ".\n" +
-                    "A link is provided to complete the payment. " + link + " \nThank you for your time.\n\nKind Regards\n", false);
+
+            if(type.equals("Invoice")) {
+                helper.setText("Dear " + client.getF_name() + ",\n\nAttached is your " + type + ".\n" +
+                        "A link is provided to complete the payment. " + link + " \nThank you for your time.\n\nKind Regards\n", false);
+            }
+            else
+            {
+                helper.setText("Dear " + client.getF_name() + ",\n\nAttached is your " + type + ".\n" +
+                        "Thank you for your time.\n\nKind Regards\n", false);
+
+            }
 
             // Attach the file from the specified path
             FileSystemResource file = new FileSystemResource(new File(path));

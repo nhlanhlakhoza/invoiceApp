@@ -45,7 +45,7 @@ private UserRepository repository;
 
 
             SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom("nhlanhlakhoza05@gmail.com");// input the senders email ID
+            msg.setFrom("inv@mfactorydev.co.za");// input the senders email ID
             msg.setTo(user.getEmail());
 
             msg.setSubject("Password Reset Request");
