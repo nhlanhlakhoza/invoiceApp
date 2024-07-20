@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins ="http://localhost:4200/")
+@CrossOrigin(origins ="https://ravishing-youth-production.up.railway.app")
 public class AuthenticationController {
 
 
