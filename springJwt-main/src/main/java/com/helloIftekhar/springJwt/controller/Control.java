@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 @RestController
-@CrossOrigin(origins = "http://localhost:4200") // Remove trailing slash
+@CrossOrigin(origins = "https://ravishing-youth-production.up.railway.app") // Remove trailing slash
 @RequestMapping("/user")
 public class Control {
     @Autowired
