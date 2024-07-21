@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200") // Remove trailing slash
+@CrossOrigin(origins = "*")  // Allow all origins
 public class AuthenticationController {
 
 
