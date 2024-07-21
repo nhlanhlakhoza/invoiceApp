@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "https://ravishing-youth-production.up.railway.app") // Remove trailing slash
+@CrossOrigin(origins = "http://localhost:4200") // Remove trailing slash
 @RequestMapping("/user")
 public class UserController {
 
