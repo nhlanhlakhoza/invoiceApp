@@ -46,6 +46,11 @@
 			<artifactId>jta</artifactId>
 			<version>1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.6.0</version> <!-- Ensure this is the latest version -->
+		</dependency>
 
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
