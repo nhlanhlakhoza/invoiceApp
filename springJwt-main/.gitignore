@@ -1,5 +1,9 @@
 HELP.md
 target/
+!.mvn/wrapper/maven-wrapper.jar
+# Exclude all target directories except the root one
+**/target/
+!target/
 
 ### STS ###
 .apt_generated
