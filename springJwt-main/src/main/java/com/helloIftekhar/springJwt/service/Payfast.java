@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class Payfast {
     private static final String PAY_FAST_API_URL = "https://sandbox.payfast.co.za/eng/process";
-    private static final String MERCHANT_ID = "10029164";
-    private static final String MERCHANT_KEY = "2oki9md2y1wjc";
+    private static final String MERCHANT_ID = "10032977";
+    private static final String MERCHANT_KEY = "ztpol6d0izp6v";
     private static final String PAYMENT_SUCCESS_URL = "https://invoiceapp-17.onrender.com/user/";
 
 
@@ -35,7 +35,7 @@ public class Payfast {
         params.add(new BasicNameValuePair("merchant_key", MERCHANT_KEY));
         params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
         params.add(new BasicNameValuePair("item_name", description));
-        params.add(new BasicNameValuePair("return_url", PAYMENT_SUCCESS_URL+email+"/"+randomNo+"/"+amount));
+        params.add(new BasicNameValuePair("return_url", "https://invoiceapp-17.onrender.com/user/"+email+"/"+randomNo+"/"+amount));
         post.setEntity(new UrlEncodedFormEntity(params));
 
         HttpClient client = HttpClientBuilder.create().build();
