@@ -21,7 +21,7 @@ public class Payfast {
     private static final String PAY_FAST_API_URL = "https://sandbox.payfast.co.za/eng/process";
     private static final String MERCHANT_ID = "10029164";
     private static final String MERCHANT_KEY = "2oki9md2y1wjc";
-    private static final String PAYMENT_SUCCESS_URL = "http://localhost:8081/user/";
+    private static final String PAYMENT_SUCCESS_URL = "http://invoiceapp-17.onrender.com/user/";
 
 
     public String initiatePayment(double amount, String description, String email,int randomNo) throws IOException {
